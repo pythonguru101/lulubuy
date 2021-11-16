@@ -15,7 +15,7 @@ class ProductObserver
      */
     public function created(Product $product)
     {
-        $firebaseKey = Firebase::createProduct($product->toArray());
+        $firebaseKey = Firebase::create($product->toArray());
         if (!empty($firebaseKey)) {
             $product->firebase_key = $firebaseKey;
             $product->update(['firebase_key' => $firebaseKey]);
@@ -31,7 +31,7 @@ class ProductObserver
     public function updated(Product $product)
     {
         if (!empty($product->firebase_key)) {
-            Firebase::updateProduct($product->toArray());
+            Firebase::update($product->toArray());
         }
     }
 
@@ -44,7 +44,7 @@ class ProductObserver
     public function deleted(Product $product)
     {
         if (!empty($product->firebase_key)) {
-            Firebase::deleteProduct($product->firebase_key);
+            Firebase::delete($product->firebase_key);
         }
     }
 
@@ -68,7 +68,7 @@ class ProductObserver
     public function forceDeleted(Product $product)
     {
         if (!empty($product->firebase_key)) {
-            Firebase::deleteProduct($product->firebase_key);
+            Firebase::delete($product->firebase_key);
         }
     }
 }

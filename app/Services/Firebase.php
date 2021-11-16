@@ -12,21 +12,22 @@ class Firebase
 {
 
     /**
-     * create new product on firebase
+     * create new document on firebase
      * @param $data
+     * @param string $document
      * @return string|null
      */
-    public static function createProduct($data): ?string
+    public static function create($data, string $document = 'product'): ?string
     {
         try {
             $firebaseProduct = self::getDb()
-                ->getReference(env('FIREBASE_DATABASE_PRODUCTS'))
+                ->getReference(self::getFirebaseUrl($document))
                 ->push(
                     $data
                 );
             return $firebaseProduct->getKey();
         } catch (Exception $exception) {
-            Log::error("Couldn't create the product into Firebase.", ['error' => $exception->getMessage(), 'data' => $data]);
+            Log::error("Couldn't create the document into Firebase.", ['error' => $exception->getMessage(), 'document' => $document, 'data' => $data]);
             return null;
         }
     }
@@ -42,26 +43,6 @@ class Firebase
             ->withDatabaseUri(env('FIREBASE_DATABASE_URI'))
             ->create();
         return $firebase->getDatabase();
-    }
-
-    /**
-     * Update Product to firebase
-     * @param $data
-     * @return bool
-     */
-    public static function updateProduct($data): bool
-    {
-        try {
-            $key = $data['firebase_key'];
-            unset($data['firebase_key']);
-            self::getDb()
-                ->getReference(self::getFirebaseUrl('product', $key))
-                ->update($data);
-            return true;
-        } catch (Exception $exception) {
-            Log::error("Couldn't update the product on Firebase.", ['error' => $exception->getMessage(), 'data' => $data]);
-            return false;
-        }
     }
 
     /**
@@ -83,19 +64,41 @@ class Firebase
     }
 
     /**
-     * Delete a product from firebase
-     * @param $key
+     * Update document to firebase
+     * @param $data
+     * @param string $document
      * @return bool
      */
-    public static function deleteProduct($key): bool
+    public static function update($data, string $document = 'product'): bool
+    {
+        try {
+            $key = $data['firebase_key'];
+            unset($data['firebase_key']);
+            self::getDb()
+                ->getReference(self::getFirebaseUrl($document, $key))
+                ->update($data);
+            return true;
+        } catch (Exception $exception) {
+            Log::error("Couldn't update the document on Firebase.", ['error' => $exception->getMessage(), 'document' => $document, 'data' => $data]);
+            return false;
+        }
+    }
+
+    /**
+     * Delete a document from firebase
+     * @param $key
+     * @param string $document
+     * @return bool
+     */
+    public static function delete($key, string $document = 'product'): bool
     {
         try {
             self::getDb()
-                ->getReference(self::getFirebaseUrl('product', $key))
+                ->getReference(self::getFirebaseUrl($document, $key))
                 ->remove();
             return true;
         } catch (Exception $exception) {
-            Log::error("Couldn't delete the product from Firebase", ['error' => $exception->getMessage(), 'key' => $key]);
+            Log::error("Couldn't delete the document from Firebase", ['error' => $exception->getMessage(), 'document' => $document, 'key' => $key]);
             return false;
 
         }
