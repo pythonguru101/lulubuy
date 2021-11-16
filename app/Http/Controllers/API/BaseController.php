@@ -4,9 +4,6 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller as Controller;
 use Illuminate\Http\JsonResponse;
-use Kreait\Firebase\Database;
-use Kreait\Firebase\Factory;
-use Kreait\Firebase\ServiceAccount;
 
 class BaseController extends Controller
 {
@@ -41,18 +38,5 @@ class BaseController extends Controller
 
         return response()->json($res, $code);
 
-    }
-
-    /**
-     * @return Database
-     */
-    public function getDb(): Database
-    {
-        $serviceAccount = ServiceAccount::fromJsonFile(storage_path(env('FIREBASE_CREDENTIALS_PATH')));
-        $firebase = (new Factory)->withServiceAccount($serviceAccount)
-            ->withDatabaseUri(env('FIREBASE_DATABASE_URI'))
-            ->create();
-
-        return $firebase->getDatabase();
     }
 }

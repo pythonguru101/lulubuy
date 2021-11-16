@@ -5,10 +5,9 @@ namespace App\Http\Controllers\API;
 use App\Http\Requests\ProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
-use Kreait\Firebase\Factory;
-use Kreait\Firebase\ServiceAccount;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends BaseController
 {
@@ -23,9 +22,13 @@ class ProductController extends BaseController
      */
     public function index(): JsonResponse
     {
-        $products = $this->getDb()->getReference()->orderByKey()->getSnapshot();
-        return $this->handleResponse([$products->getValue()], "Product list.");
-
+        try {
+            $products = Product::latest()->paginate(25);
+            return $this->handleResponse(ProductResource::collection($products), "Product list");
+        } catch (Exception $exception) {
+            Log::error("Error on listing products.", ["error" => $exception->getMessage()]);
+            return $this->handleError("Error on listing products", [$exception->getMessage()]);
+        }
     }
 
     /**
@@ -36,14 +39,13 @@ class ProductController extends BaseController
      */
     public function store(ProductRequest $request): JsonResponse
     {
-        $newProduct = $this->getDb()
-            ->getReference('products')
-            ->push(
-                $request->safe()->all()
-            );
-        $result = $newProduct->getValue();
-        $result['key'] = $newProduct->getKey();
-        return $this->handleResponse($result, "New product was created", 201);
+        try {
+            $product = Product::create($request->safe()->all());
+            return $this->handleResponse(new ProductResource($product), "New product was created", 201);
+        } catch (Exception $exception) {
+            Log::error("Error on creating product.", ["error" => $exception->getMessage(), "data" => $request->all()]);
+            return $this->handleError("Error on creating product", [$exception->getMessage()]);
+        }
     }
 
     /**
@@ -52,15 +54,18 @@ class ProductController extends BaseController
      * @param $key
      * @return JsonResponse
      */
-    public function show($key): JsonResponse
+    public function show($id): JsonResponse
     {
-        $url = env('FIREBASE_DATABASE_NAME').'/' . $key;
-        $product = $this->getDb()->getReference($url)->getValue();
-        $product['key'] = $key;
-        if (is_null($product)) {
-            return $this->handleError("Product was not found", []);
+        try {
+            $product = Product::find($id);
+            if (is_null($product)) {
+                return $this->handleError("Product was not found", []);
+            }
+            return $this->handleResponse(new ProductResource($product), "Product details");
+        } catch (Exception $exception) {
+            Log::error("Error on detail product.", ["error" => $exception->getMessage(), "id" => $id]);
+            return $this->handleError("Error on detail product", [$exception->getMessage()]);
         }
-        return $this->handleResponse($product, "Product details");
     }
 
 
@@ -71,11 +76,15 @@ class ProductController extends BaseController
      * @param $key
      * @return JsonResponse
      */
-    public function update(ProductRequest $request, $key): JsonResponse
+    public function update(ProductRequest $request, Product $product): JsonResponse
     {
-        $url = env('FIREBASE_DATABASE_NAME').'/' . $key;
-        $product = $this->getDb()->getReference($url)->update($request->safe()->all());
-        return $this->handleResponse($product, "Product updated successfully.");
+        try {
+            $product->update($request->safe()->all());
+            return $this->handleResponse(new ProductResource($product), "Product updated successfully.");
+        } catch (Exception $exception) {
+            Log::error("Error on detail product.", ["error" => $exception->getMessage(), "product" => $product, 'request' => $request->all()]);
+            return $this->handleError("Error on updating product", [$exception->getMessage()]);
+        }
     }
 
     /**
@@ -84,11 +93,32 @@ class ProductController extends BaseController
      * @param int $id
      * @return JsonResponse
      */
-    public function destroy($key): JsonResponse
+    public function destroy(Product $product): JsonResponse
     {
-        $url = env('FIREBASE_DATABASE_NAME').'/' . $key;
-        $product = $this->getDb()->getReference($url)->remove();
-        return $this->handleResponse($product, "Product was deleted.");
+        try {
+            $product->delete();
+            return $this->handleResponse(new ProductResource($product), "Product was deleted.");
+        } catch (Exception $exception) {
+            Log::error("Error on deleting product.", ["error" => $exception->getMessage(), "product" => $product]);
+            return $this->handleError("Error on deleting product", [$exception->getMessage()]);
+        }
     }
 
+
+    /**
+     * Search for a product
+     */
+    public function search($title): JsonResponse
+    {
+        try {
+            $products = Product::where('product_name', 'like', '%' . $title . '%')->get();
+            if (is_null($products)) {
+                return $this->handleError("Product was not found", []);
+            }
+            return $this->handleResponse(ProductResource::collection($products), "Search product result.");
+        } catch (Exception $exception) {
+            Log::error("Error on deleting product.", ["error" => $exception->getMessage(), "search" => $title]);
+            return $this->handleError("Error on deleting product", [$exception->getMessage()]);
+        }
+    }
 }
