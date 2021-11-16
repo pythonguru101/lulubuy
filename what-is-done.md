@@ -20,3 +20,8 @@
          1. Post requests to create new account;
       2. Login: 
          1. Post requests to log in existing user and getting the token;
+4. created new Service 'app/Services/Firebase.php' that contains methods used to send pushes to Firebase;
+5. Created 'app/Observers/UserObserver.php' used to call Firebase methods when new user is created/updated/deleted;
+6. Created 'app/Observers/ProductObserver.php' used to manage notifications to Firebase when new product is created/updated/deleted;
+7. All observers are called from 'app/Providers/EventServiceProvider.php';
+8. Created new migrations to add column 'firebase_key' to 'products' and 'users' table;
