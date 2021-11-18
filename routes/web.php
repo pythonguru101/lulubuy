@@ -14,5 +14,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return response()->json(["success" => true, "data" => ["version" => "1.0"], "message" => "Welcome"]);
+    return response()->json(
+        [
+            "success" => true,
+            "data" => ["version" => "1.0"],
+            "message" => "Welcome",
+            "documentation" => url('/api/documentation'),
+        ],
+
+
+    );
 });

@@ -23,3 +23,4 @@ After installation go to [Register page](http://127.0.0.1/api/register)
 5. [PUT] api/products with product object to update
 6. [DELETE] api/products/id
 7. [GET] api/products/id
+8. [GET] api/documentation

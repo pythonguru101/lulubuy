@@ -5,6 +5,12 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller as Controller;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * @OA\Info(
+ *    title="Products Api ",
+ *    version="1.0.0",
+ * )
+ */
 class BaseController extends Controller
 {
 

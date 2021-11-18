@@ -13,9 +13,40 @@ class AuthController extends BaseController
 {
 
     /**
-     * Create new user
-     * @param UserRegistrationRequest $request
-     * @return JsonResponse
+     * @OA\Post(
+     * path="/api/register",
+     * operationId="Register",
+     * tags={"Register"},
+     * summary="User Register",
+     * description="User Register here",
+     *     @OA\RequestBody(
+     *         @OA\JsonContent(),
+     *         @OA\Schema(
+     *               type="object",
+     *               required={"name","email", "password"},
+     *               @OA\Property(property="name", type="text"),
+     *               @OA\Property(property="email", type="text"),
+     *               @OA\Property(property="password", type="password"),
+     *            )
+     *    ),
+     *      @OA\Response(
+     *          response=201,
+     *          description="Register Successfully",
+     *          @OA\JsonContent()
+     *       ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Register Successfully",
+     *          @OA\JsonContent()
+     *       ),
+     *      @OA\Response(
+     *          response=422,
+     *          description="Unprocessable Entity",
+     *          @OA\JsonContent()
+     *       ),
+     *      @OA\Response(response=400, description="Bad request"),
+     *      @OA\Response(response=404, description="Resource Not Found"),
+     * )
      */
     public function register(UserRegistrationRequest $request): JsonResponse
     {
@@ -30,9 +61,42 @@ class AuthController extends BaseController
     }
 
     /**
-     * Login user
-     * @param AuthRequest $request
-     * @return JsonResponse
+     * @OA\Post(
+     * path="/api/login",
+     * operationId="authLogin",
+     * tags={"Login"},
+     * summary="User Login",
+     * description="Login User Here",
+     *     @OA\RequestBody(
+     *         @OA\JsonContent(),
+     *         @OA\MediaType(
+     *            mediaType="multipart/form-data",
+     *            @OA\Schema(
+     *               type="object",
+     *               required={"email", "password"},
+     *               @OA\Property(property="email", type="email"),
+     *               @OA\Property(property="password", type="password")
+     *            ),
+     *        ),
+     *    ),
+     *      @OA\Response(
+     *          response=201,
+     *          description="Login Successfully",
+     *          @OA\JsonContent()
+     *       ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Login Successfully",
+     *          @OA\JsonContent()
+     *       ),
+     *      @OA\Response(
+     *          response=422,
+     *          description="Unprocessable Entity",
+     *          @OA\JsonContent()
+     *       ),
+     *      @OA\Response(response=400, description="Bad request"),
+     *      @OA\Response(response=404, description="Resource Not Found"),
+     * )
      */
     public function login(AuthRequest $request): JsonResponse
     {
@@ -53,15 +117,30 @@ class AuthController extends BaseController
     }
 
     /**
-     * Logout user
-     * @return JsonResponse
-     *
+     * @OA\Post (
+     *     path="api/logout",
+     *     operationId="authLogout",
+     *     tags={"Logout"},
+     *     summary="User logout",
+     *     security={ {"Bearer": {} }},
+     *     description="Logout current user",
+     *          @OA\RequestBody(
+     *              @OA\JsonContent(),
+     *          ),
+     *          @OA\Response(
+     *              response=200,
+     *              description="Logout successfully",
+     *              @OA\JsonContent()
+     *          ),
+     *      @OA\Response(response=400, description="Bad request"),
+     *      @OA\Response(response=404, description="Resource Not Found"),
+     *     )
      */
     public function logout()
     {
         try {
             auth()->user()->tokens()->logout();
-            return $this->handleResponse([], "Logged out successfuly");
+            return $this->handleResponse([], "Logged out successfully");
         } catch (Exception $exception) {
             Log::error("Error on logout user.", ["error" => $exception->getMessage(), "user" => \auth()->user()]);
             return $this->handleError("Error on logout user", [$exception->getMessage()]);

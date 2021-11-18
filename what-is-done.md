@@ -25,3 +25,4 @@
 6. Created 'app/Observers/ProductObserver.php' used to manage notifications to Firebase when new product is created/updated/deleted;
 7. All observers are called from 'app/Providers/EventServiceProvider.php';
 8. Created new migrations to add column 'firebase_key' to 'products' and 'users' table;
+9. Added Swagger for api documentation and updated all methods to be listed on documentation page 'api/documentation'
